@@ -1,7 +1,10 @@
 package com.jmfurlott.todoapplication;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -35,6 +38,8 @@ public class MainActivity extends AppCompatActivity {
         lvItems.setAdapter(itemsAdapter);
 
         setupListViewListener();
+        setupAlertDialogListener();
+
     }
 
     @Override
@@ -68,6 +73,48 @@ public class MainActivity extends AppCompatActivity {
                 itemsAdapter.notifyDataSetChanged();
                 writeItems();
                 return true;
+            }
+        });
+    }
+
+    private void setupAlertDialogListener() {
+        lvItems.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                // Access the position from inside Dialog save handler
+                final int pos = position;
+
+                LayoutInflater inflater = LayoutInflater.from(MainActivity.this);
+                final View viewInflater = inflater.inflate(R.layout.dialog_edit, null);
+
+                final EditText etEditItem = (EditText) viewInflater.findViewById(R.id.etEditItem);
+                etEditItem.setText(items.get(pos)); // Set initial text to be edited
+
+                // Start building our dialog
+                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                builder.setView(viewInflater); // Dialog layout
+                builder.setTitle("Edit item");
+
+                // Add the buttons
+                builder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        String itemText = etEditItem.getText().toString();
+                        items.set(pos, itemText);
+                        itemsAdapter.notifyDataSetChanged();
+                        writeItems();
+                    }
+                });
+                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        // User cancelled the dialog
+                        // Don't do anything
+                    }
+                });
+
+                AlertDialog dialog = builder.create();
+
+                // Actually display the dialog
+                dialog.show();
             }
         });
     }
